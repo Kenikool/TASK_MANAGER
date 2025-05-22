@@ -24,6 +24,12 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 
 // routes
+app.get(
+  "/",
+  async(req, (res) => {
+    res.send("Hello World");
+  })
+);
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/admin", adminRoutes);
