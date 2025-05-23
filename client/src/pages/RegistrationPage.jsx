@@ -18,9 +18,8 @@ const RegistrationPage = () => {
 
   const {
     mutate: register,
-    isError,
+
     isPending,
-    error,
   } = useMutation({
     mutationFn: async ({ email, username, password }) => {
       const res = await fetch("/api/auth/signup", {

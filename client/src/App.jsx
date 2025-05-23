@@ -24,7 +24,7 @@ const App = () => {
         if (!res.ok) throw new Error(data.error || "Something went wrong");
         return data;
       } catch (error) {
-        return null;
+        throw new Error(error.message);
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes

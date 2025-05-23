@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import TaskCard from "../components/TaskCard";
 import { FaTasks, FaPlus, FaEdit, FaTimes } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+// Register GSAP plugin
+gsap.registerPlugin(ScrollTrigger);
 // Fetch all tasks
 const fetchTasks = async () => {
   const res = await fetch("/api/tasks");
@@ -60,7 +65,8 @@ const TaskPage = () => {
   });
 
   const completeMutation = useMutation({
-    mutationFn: ({ id }) => updateTask({ id, updates: { status: "completed" } }),
+    mutationFn: ({ id }) =>
+      updateTask({ id, updates: { status: "completed" } }),
     onSuccess: () => {
       toast.success("Task marked as completed!");
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
@@ -80,6 +86,44 @@ const TaskPage = () => {
   // Editing modal state
   const [editingTask, setEditingTask] = useState(null);
   const [editForm, setEditForm] = useState({});
+
+  // Refs for GSAP animation
+  const cardsRef = useRef([]);
+
+  // Animate TaskCards on scroll
+  useEffect(() => {
+    if (!tasks || tasks.length === 0) return;
+
+    // Clear previous animations
+    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    gsap.killTweensOf(cardsRef.current);
+
+    cardsRef.current.forEach((el, idx) => {
+      if (!el) return;
+      gsap.fromTo(
+        el,
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          delay: idx * 0.08,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: el,
+            start: "top 90%",
+            toggleActions: "play none none reverse",
+          },
+        }
+      );
+    });
+
+    // Cleanup on unmount
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      gsap.killTweensOf(cardsRef.current);
+    };
+  }, [tasks]);
 
   // Open edit modal
   const handleEdit = (task) => {
@@ -138,7 +182,9 @@ const TaskPage = () => {
           </Link>
         </div>
         {(isLoading || isRefetching) && <LoadingSpinner />}
-        {isError && <div className="alert alert-error mb-4">{error.message}</div>}
+        {isError && (
+          <div className="alert alert-error mb-4">{error.message}</div>
+        )}
         {!isLoading && !isRefetching && !isError && tasks.length === 0 && (
           <div className="text-center text-base-content py-8">
             No tasks found.{" "}
@@ -151,19 +197,24 @@ const TaskPage = () => {
           !isRefetching &&
           !isError &&
           tasks.length > 0 &&
-          tasks.map((task) => (
-            <TaskCard
+          tasks.map((task, idx) => (
+            <div
               key={task._id}
-              task={task}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onComplete={handleComplete}
-              disableActions={
-                editMutation.isPending ||
-                completeMutation.isPending ||
-                deleteMutation.isPending
-              }
-            />
+              ref={el => (cardsRef.current[idx] = el)}
+              style={{ opacity: 0, transform: "translateY(40px)" }}
+            >
+              <TaskCard
+                task={task}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onComplete={handleComplete}
+                disableActions={
+                  editMutation.isPending ||
+                  completeMutation.isPending ||
+                  deleteMutation.isPending
+                }
+              />
+            </div>
           ))}
       </div>
 

@@ -4,6 +4,7 @@ import connectDB from "./config/db.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route.js";
 import taskRoutes from "./routes/task.route.js";
+import cors from "cors";
 //import userRoutes from "./routes/user.js";
 import { v2 as cloudinary } from "cloudinary";
 import adminRoutes from "./routes/adminDashboard.js";
@@ -22,14 +23,14 @@ const app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
-
-// routes
-app.get(
-  "/",
-  async(req, (res) => {
-    res.send("Hello World");
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
   })
 );
+// routes
+
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/admin", adminRoutes);

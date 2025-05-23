@@ -262,16 +262,26 @@ const CreateTaskPage = () => {
               <span className="text-error text-sm">{errors.image}</span>
             )}
             {/* Preview */}
-            {(form.image && !imageFile) && (
-              <img src={form.image} alt="Preview" className="mt-2 max-h-32 mx-auto rounded" />
+            {form.image && !imageFile && (
+              <img
+                src={form.image}
+                alt="Preview"
+                className="mt-2 max-h-32 mx-auto rounded"
+              />
             )}
             {imageFile && (
-              <img src={URL.createObjectURL(imageFile)} alt="Preview" className="mt-2 max-h-32 mx-auto rounded" />
+              <img
+                src={URL.createObjectURL(imageFile)}
+                alt="Preview"
+                className="mt-2 max-h-32 mx-auto rounded"
+              />
             )}
           </div>
           {/* Submit */}
           <button
-            className={`btn btn-primary w-full flex items-center justify-center gap-2 ${loading ? "loading" : ""}`}
+            className={`btn btn-primary w-full flex items-center justify-center gap-2 ${
+              loading ? "loading" : ""
+            }`}
             type="submit"
             disabled={loading}
           >
